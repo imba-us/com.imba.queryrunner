@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<menu>
+  <item>
+    <path>civicrm/query-runner</path>
+    <page_callback>CRM_Queryrunner_Page_QueryRunner</page_callback>
+    <title>Query Runner</title>
+    <access_arguments>administer CiviCRM</access_arguments>
+  </item>
+</menu>
