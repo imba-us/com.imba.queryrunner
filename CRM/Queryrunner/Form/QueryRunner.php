@@ -54,9 +54,9 @@ class CRM_Queryrunner_Form_QueryRunner extends CRM_Admin_Form {
 
     $this->add('textarea', 'query', ts('Query'), "cols=80 rows=10", true);
 
-    $this->add('select', 'run_frequency', ts('Run frequency'), CRM_Queryrunner_Query::getQueryFrequency(), true);
+    $this->add('select', 'run_frequency', ts('Run Frequency'), CRM_Queryrunner_Query::getQueryFrequency(), true);
 
-    $this->add('text', 'starting', ts('Starting Date / Time'));
+    $this->add('text', 'starting', ts(($this->_id ? 'Next Run' : 'Starting') . ' Date / Time'), 'size=40');
 
     $this->add('checkbox', 'is_active', ts('Is this Query active?'));
   }
