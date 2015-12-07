@@ -76,7 +76,7 @@
             <td class="crm-job_name">{$row.description}</td>      
             <td class="crm-job-name">
               Last: {if $row.last_run eq null}never{else}{$row.last_run|crmDate:$config->dateformatDatetime}{/if}<br />
-              Next: {if $row.run_frequency eq 6}always{elseif $row.run_frequency eq 0}never{else}{$row.next_run_date|crmDate:$config->dateformatDatetime}{/if}
+              Next: {if $row.run_frequency eq 6}always{elseif $row.run_frequency eq 0}never{elseif $row.next_run eq 0}asap{else}{$row.next_run_date|crmDate:$config->dateformatDatetime}{/if}
             </td>
             <td id="row_{$row.id}_status" class="crm-job-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
           <td>{$row.action|replace:'xx':$row.id}</td>

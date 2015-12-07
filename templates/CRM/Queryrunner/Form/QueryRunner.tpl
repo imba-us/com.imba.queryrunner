@@ -7,7 +7,7 @@
   <div class="messages status no-popup">
       <div class="icon inform-icon"></div>
         <strong>{$query.name}</strong><br />
-        {ts}WARNING: Deleting this Query will cause some important site functionality to stop working.{/ts} {ts}Do you want to continue?{/ts}
+        {ts}Are you sure you want to delete this query?{/ts}
   </div>
 {else}
   <table class="form-layout-compressed">
