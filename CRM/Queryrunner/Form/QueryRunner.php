@@ -56,7 +56,7 @@ class CRM_Queryrunner_Form_QueryRunner extends CRM_Admin_Form {
 
     $this->add('select', 'run_frequency', ts('Run Frequency'), CRM_Queryrunner_Query::getQueryFrequency(), true);
 
-    $this->add('text', 'starting', ts(($this->_id ? 'Next Run' : 'Starting') . ' Date / Time'), 'size=40');
+    $this->addDateTime('scheduled_run_date', ts('Scheduled Run Date'), FALSE, array('formatType' => 'activityDateTime'));
 
     $this->add('checkbox', 'is_active', ts('Is this Query active?'));
   }
@@ -80,6 +80,11 @@ class CRM_Queryrunner_Form_QueryRunner extends CRM_Admin_Form {
 
     CRM_Core_DAO::storeValues($dao, $defaults);
 
+    if ($ts = $defaults['scheduled_run']) {
+      $defaults['scheduled_run_date'] = date('m/d/Y', $ts);
+      $defaults['scheduled_run_date_time'] = date('h:iA', $ts);
+    }
+
     $this->assign('query', $defaults);
 
     return $defaults;
@@ -102,6 +107,7 @@ class CRM_Queryrunner_Form_QueryRunner extends CRM_Admin_Form {
     }
 
     $values = $this->controller->exportValues($this->_name);
+    $ts = strtotime(trim("{$values['scheduled_run_date']} {$values['scheduled_run_date_time']}"));
 
     $dao = new CRM_Queryrunner_DAO_Query();
 
@@ -112,22 +118,7 @@ class CRM_Queryrunner_Form_QueryRunner extends CRM_Admin_Form {
     $dao->query = $values['query'];
     $dao->run_frequency = $values['run_frequency'];
     $dao->is_active = CRM_Utils_Array::value('is_active', $values, 0);
-
-    if ($dao->run_frequency == FREQ_NEVER)
-      $dao->next_run = (1 << 31) - 1;
-    elseif (!empty($values['starting']))
-      $dao->next_run = strtotime($values['starting']) ?: 0;
-    elseif ($dao->run_frequency == FREQ_ALWAYS)
-      $dao->next_run = 0;
-    elseif (!$dao->id)
-      $dao->next_run = 0;
-    else {
-      $dao->save();
-
-      $qm = new CRM_Queryrunner_QueryManager();
-      $dao->next_run = $qm->getNextRun($dao->id);
-    }
-
+    $dao->scheduled_run = $ts ?: 0;
     $dao->save();
   }
 

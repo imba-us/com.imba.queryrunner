@@ -91,7 +91,7 @@ class CRM_Queryrunner_Page_QueryRunner extends CRM_Core_Page_Basic {
 
     if ($this->_action == 'export') {
       $session = CRM_Core_Session::singleton();
-      $session->pushUserContext(CRM_Utils_System::url('civicrm/queyr-runner', 'reset=1'));
+      $session->pushUserContext(CRM_Utils_System::url('civicrm/query-runner', 'reset=1'));
     }
 
     return parent::run();
@@ -106,26 +106,27 @@ class CRM_Queryrunner_Page_QueryRunner extends CRM_Core_Page_Basic {
    */
   public function browse($action = NULL) {
 
+    $qm = new CRM_Queryrunner_QueryManager();
+
     // using Export action for Execute. Doh.
     if ($this->_action & CRM_Core_Action::EXPORT) {
-      $qm = new CRM_Queryrunner_QueryManager();
-      $qm->execute($this->_id);
-
+      $qm->execute($this->_id, TRUE);
       $name = $qm->getNameFromId($this->_id);
       CRM_Core_Session::setStatus(ts("The $name query has been executed."), ts("Executed"), "success");
     }
 
-    if (empty($qm))
-      $qm = new CRM_Queryrunner_QueryManager();
-    
+    $freqs = CRM_Queryrunner_Query::getQueryFrequency();
+
     $rows = array();
     foreach ($qm->queries as $query) {
       $action = array_sum(array_keys($this->links()));
 
-      if ($query->is_active)
+      if ($query->is_active) {
         $action -= CRM_Core_Action::ENABLE;
-      else
+      }
+      else {
         $action -= CRM_Core_Action::DISABLE;
+      }
 
       $query->action = CRM_Core_Action::formLink(self::links(), $action,
         array('id' => $query->id),
@@ -135,13 +136,15 @@ class CRM_Queryrunner_Page_QueryRunner extends CRM_Core_Page_Basic {
         'Query',
         $query->id
       );
-      $query->next_run_date = date('Y-m-d G:i:s', $query->next_run);
-      $query->freq_text = $query->freq_text;
+      $query->last_run = $query->last_run ? date('M j, Y, g:ia', $query->last_run) : 'never';
+      $query->scheduled_run = $query->scheduled_run ? date('M j, Y, g:ia', $query->scheduled_run) : '';
+      $query->run_frequency = $freqs[$query->run_frequency];
       $query = get_object_vars($query);
       $rows[] = $query;
 
-      if ($query['id'] == $this->_id)
+      if ($query['id'] == $this->_id) {
         $this->assign('query', $query);
+      }
     }
     $this->assign('rows', $rows);
 

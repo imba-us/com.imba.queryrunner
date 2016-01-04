@@ -24,7 +24,12 @@
         <td class="label">{$form.run_frequency.label}</td><td>{$form.run_frequency.html}</td>
     </tr>
     <tr>
-        <td class="label">{$form.starting.label}</td><td>{$form.starting.html}</td>
+        <td class="label">{$form.scheduled_run_date.label}</td>
+        <td>{include file="CRM/common/jcalendar.tpl" elementName=scheduled_run_date}
+            <div dlass="description">{ts}Do not run this query before this date / time. The run frequency selected above will apply thereafter.{/ts}<br />
+              {if $action eq 1}{ts}Leave blank to run as soon as possible.{/ts}{else}{ts}Leave blank to run at next run frequency.{/ts}{/if}
+            </div>
+        </td>
     </tr>
     <tr>
       <td></td><td>{$form.is_active.html}&nbsp;{$form.is_active.label}</td>

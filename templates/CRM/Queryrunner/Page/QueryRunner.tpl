@@ -72,11 +72,11 @@
         </tr>
         {foreach from=$rows item=row}
         <tr id="query-{$row.id}" class="crm-entity {cycle values="odd-row,even-row"} {$row.class}{if NOT $row.is_active} disabled{/if}">
-            <td class="crm-job-name"><strong><span data-field="name">{$row.name}</span></strong> ({$row.freq_text})</td>
+            <td class="crm-job-name"><strong><span data-field="name">{$row.name}</span></strong> ({$row.run_frequency})</td>
             <td class="crm-job_name">{$row.description}</td>      
             <td class="crm-job-name">
-              Last: {if $row.last_run eq null}never{else}{$row.last_run|crmDate:$config->dateformatDatetime}{/if}<br />
-              Next: {if $row.run_frequency eq 6}always{elseif $row.run_frequency eq 0}never{elseif $row.next_run eq 0}asap{else}{$row.next_run_date|crmDate:$config->dateformatDatetime}{/if}
+              {ts}Last{/ts}: {$row.last_run}
+              {if $row.scheduled_run != ''}<br />{ts}Scheduled{/ts}: {$row.scheduled_run}{/if}
             </td>
             <td id="row_{$row.id}_status" class="crm-job-is_active">{if $row.is_active eq 1} {ts}Yes{/ts} {else} {ts}No{/ts} {/if}</td>
           <td>{$row.action|replace:'xx':$row.id}</td>

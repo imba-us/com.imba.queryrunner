@@ -2,14 +2,6 @@
 
 require_once 'queryrunner.civix.php';
 
-define('FREQ_NEVER', 0);
-define('FREQ_HOURLY', 1);
-define('FREQ_DAILY', 2);
-define('FREQ_WEEKLY', 3);
-define('FREQ_MONTHLY', 4);
-define('FREQ_YEARLY', 5);
-define('FREQ_ALWAYS', 6);
-
 /**
  * Implements hook_civicrm_config().
  *
@@ -72,7 +64,7 @@ function queryrunner_civicrm_install() {
     'name' => "Query Runner",
     'api_entity' => "Query",
     'api_action' => "execute",
-    'description' => "Execute queries defined by Query Runner",
+    'description' => "Execute queries defined by the Query Runner extension",
     'is_active' => 1,
   ));
 
@@ -82,9 +74,9 @@ function queryrunner_civicrm_install() {
                             `machine_name` varchar(255) NOT NULL DEFAULT '',
                             `description` varchar(255) NOT NULL,
                             `query` text NOT NULL,
-                            `run_frequency` tinyint(4) NOT NULL DEFAULT '0',
-                            `last_run` timestamp NULL DEFAULT NULL,
-                            `next_run` int(11) NOT NULL DEFAULT '0',
+                            `run_frequency` varchar(8) NOT NULL DEFAULT 'Never',
+                            `last_run` int(11) NULL DEFAULT '0',
+                            `scheduled_run` int(11) NOT NULL DEFAULT '0',
                             `is_active` tinyint(4) NOT NULL DEFAULT '1',
                             PRIMARY KEY (`id`),
                             UNIQUE KEY `name` (`name`)
@@ -101,8 +93,8 @@ function queryrunner_civicrm_uninstall() {
 
   $id = civicrm_api3('Job', 'getvalue', array(
     'sequential' => 1,
-    'return' => "id",
-    'name' => "Query Runner",
+    'return' => 'id',
+    'name' => 'Query Runner',
   ));
   if (is_numeric($id))
     $result = civicrm_api3('Job', 'delete', array(
@@ -120,6 +112,18 @@ function queryrunner_civicrm_uninstall() {
  */
 function queryrunner_civicrm_enable() {
   _queryrunner_civix_civicrm_enable();
+
+  $id = civicrm_api3('Job', 'getvalue', array(
+    'sequential' => 1,
+    'return' => 'id',
+    'name' => 'Query Runner',
+  ));
+  if (is_numeric($id))
+    $result = civicrm_api3('Job', 'create', array(
+      'sequential' => 1,
+      'id' => $id,
+      'is_active' => 1,
+    ));
 }
 
 /**
@@ -129,6 +133,18 @@ function queryrunner_civicrm_enable() {
  */
 function queryrunner_civicrm_disable() {
   _queryrunner_civix_civicrm_disable();
+
+  $id = civicrm_api3('Job', 'getvalue', array(
+    'sequential' => 1,
+    'return' => 'id',
+    'name' => 'Query Runner',
+  ));
+  if (is_numeric($id))
+    $result = civicrm_api3('Job', 'create', array(
+      'sequential' => 1,
+      'id' => $id,
+      'is_active' => 0,
+    ));
 }
 
 /**

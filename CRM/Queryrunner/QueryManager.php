@@ -5,33 +5,26 @@ class CRM_Queryrunner_QueryManager {
   public $queries = null;
 
   public function __construct() {
-    $this->queries = $this->_getQueries();
-  }
-
-  private function _getQueries() {
-    if (!$this->queries) {
-      $queries = array();
-      $dao = new CRM_Queryrunner_DAO_Query();
-      $dao->orderBy('name');
-      $dao->find();
-      while ($dao->fetch()) {
-        $temp = array();
-        CRM_Core_DAO::storeValues($dao, $temp);
-        $queries[$dao->id] = new CRM_Queryrunner_Query($temp);
-      }
-      $this->queries = $queries;
+    $queries = array();
+    $dao = new CRM_Queryrunner_DAO_Query();
+    $dao->orderBy('name');
+    $dao->find();
+    while ($dao->fetch()) {
+      $temp = array();
+      CRM_Core_DAO::storeValues($dao, $temp);
+      $queries[$dao->id] = new CRM_Queryrunner_Query($temp);
     }
-    return $this->queries;
+    $this->queries = $queries;
   }
 
-  private function _execute($query) {
+  private function _execute($query, $force = FALSE) {
     static $date;
 
-    if ($query->is_active && $query->needsRunning()) {
+    if ($force || ($query->is_active && $query->needsRunning())) {
 
-      $start = microtime(true);
+      $start = microtime(TRUE);
       $dao = CRM_Core_DAO::executeQuery($query->query);
-      $finish = microtime(true);
+      $finish = microtime(TRUE);
 
       $execute = $finish - $start;
       $time = array();
@@ -44,72 +37,60 @@ class CRM_Queryrunner_QueryManager {
         $time[] = ((int) ($execute / 60)) . 'm';
         $execute = $execute % 60;
       }
-      if ($execute > 0)
-        $time[] = $execute . 's';
+      if ($execute > 1) {
+        $time[] = number_format($execute, 4) . 's';
+      }
+      else {
+        $time[] = number_format($execute * 1000, 4) . 'ms';
+      }
 
       $time = implode(' ', $time);
 
       echo "$query->name: {$dao->affectedRows()} row(s) affected, $time\n";
 
-      $date = $query->saveLastRun($date, true);
+      $date = $query->saveLastRun($date);
 
-      return true;
+      return TRUE;
     }
-    return false;
+    return FALSE;
   }
 
-  public function execute($params) {
-    $count = 0;
+  public function execute($params, $force = FALSE) {
+    $executed = FALSE;
     
     ob_start();
 
     echo "Executing Queries...\n";
     
     if (!empty($params['name'])) {
-      $field = 'machine_name';
-      $value = $params['name'];
-      $cron = true;
-    }
-    elseif (is_numeric($params)) {
-      $field = 'id';
-      $value = $params;
-      $cron = false;
-    }
-
-    if (!empty($field)) {
       foreach($this->queries as $query) {
-        if ($query->$field == $value) {
-          if ($cron)
-            $query->next_run = 0;
-          if ($this->_execute($query))
-            $count++;
+        if ($query->machine_name == $params['name']) {
+          $params = $query->id;
+          $force = TRUE;
+          break;
         }
+      }
+    }
+    if (is_numeric($params)) {
+      if (!empty($this->queries[$params])) {
+        $query = $this->queries[$params];
+        $executed = $this->_execute($query, $force);
       }
     }
     else {
       foreach($this->queries as $query) {
-        if ($this->_execute($query))
-          $count++;
+        $result = $this->_execute($query, $force);
+        $executed = $executed || $result;
       }
     }
+
     $output = ob_get_clean();
 
-    return $count ? $output : 'No queries were scheduled to run.';
+    return $executed ? $output : 'No queries were scheduled to run.';
   }
 
   public function getNameFromId($id) {
-    foreach($this->queries as $query) {
-      if ($query->id == $id)
-        return $query->name;
-    }
+    return $this->queries[$id]->name;
   }
 
-  public function getNextRun($id) {
-    foreach($this->queries as $query) {
-      if ($query->id == $id) {
-        return $query->saveNextRun(null, true);
-      }
-    }
-  }
-  
 }

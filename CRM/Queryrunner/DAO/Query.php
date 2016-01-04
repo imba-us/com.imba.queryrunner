@@ -81,23 +81,23 @@ class CRM_Queryrunner_DAO_Query extends CRM_Core_DAO
    */
   public $query;
   /**
-   * query run frequency, FREQ_??? constants
+   * query run frequency
    *
-   * @var int
+   * @var string
    */
   public $run_frequency;
   /**
    * When was this query last run
    *
-   * @var datetime
+   * @var int
    */
   public $last_run;
   /**
-   * Next scheduled run
+   * Scheduled run
    *
    * @var int
    */
-  public $next_run;
+  public $scheduled_run;
   /**
    * Is query active
    *
@@ -158,19 +158,19 @@ class CRM_Queryrunner_DAO_Query extends CRM_Core_DAO
         ),
         'run_frequency' => array(
           'name' => 'run_frequency',
-          'type' => CRM_Utils_Type::T_INT,
+          'type' => CRM_Utils_Type::T_STRING,
           'title' => ts('Run Frequency'),
           'description' => 'How often should this query be run'
         ),
         'last_run' => array(
           'name' => 'last_run',
-          'type' => CRM_Utils_Type::T_DATE + CRM_Utils_Type::T_TIME,
+          'type' => CRM_Utils_Type::T_INT,
           'title' => ts('Last Run') ,
-          'description' => 'When was this query last run',
+          'description' => 'UNIX timestamp for when this query last ran',
           'default' => 'NULL',
         ),
-        'next_run' => array(
-          'name' => 'next_run',
+        'scheduled_run' => array(
+          'name' => 'scheduled_run',
           'type' => CRM_Utils_Type::T_INT,
           'title' => ts('Next Run'),
           'description' => 'UNIX timestamp for next execution'
@@ -202,7 +202,7 @@ class CRM_Queryrunner_DAO_Query extends CRM_Core_DAO
         'query' => 'query',
         'run_frequency' => 'run_frequency',
         'last_run' => 'last_run',
-        'next_run' => 'next_run',
+        'scheduled_run' => 'scheduled_run',
         'is_active' => 'is_active',
       );
     }
